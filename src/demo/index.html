@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Busca em Grafos | BFS × DFS</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="identity"><span class="identity-mark" aria-hidden="true">ED</span><div><strong>Estrutura de Dados</strong><span>Simulador visual · Trabalho P2</span></div></div>
+        <span class="topbar-tag">Grafos não ponderados</span>
+      </header>
+
+      <div class="heading"><div><p class="eyebrow">LABORATÓRIO INTERATIVO</p><h1>Busca em Largura <span>×</span> Profundidade</h1><p>Explore como a <strong>fila (BFS)</strong> e a <strong>pilha (DFS)</strong> mudam o caminho percorrido no mesmo grafo.</p></div></div>
+
+      <main class="layout">
+        <aside class="panel controls" aria-label="Configuração da simulação">
+          <div class="panel-heading"><h2>Configuração</h2><span class="section-number">01</span></div>
+          <div class="field"><label>Algoritmo</label><div class="segment" role="group" aria-label="Escolher algoritmo"><button type="button" id="choose-bfs" class="selected" aria-pressed="true">BFS <small>Fila</small></button><button type="button" id="choose-dfs" aria-pressed="false">DFS <small>Pilha</small></button></div></div>
+          <div class="field"><label for="preset">Cenário</label><select id="preset"><option value="comparacao">Rotas diferentes</option><option value="medio">Com obstáculos</option><option value="pior">Sem caminho (pior caso)</option><option value="personalizado">Personalizado</option></select><p class="hint" id="scenario-help">Sem obstáculos: ideal para comparar o caminho mais curto.</p></div>
+          <div class="field"><label for="edit-mode">Editar o labirinto</label><select id="edit-mode"><option value="parede">Adicionar ou remover obstáculo</option><option value="inicio">Mover ponto inicial</option><option value="fim">Mover destino</option></select><p class="hint">Selecione uma opção e clique nos quadrados do labirinto.</p></div>
+          <div class="divider"></div>
+          <div class="field"><div class="label-row"><label for="speed">Velocidade</label><output for="speed" id="speed-label">Normal</output></div><input type="range" min="150" max="1100" value="520" step="10" id="speed" aria-label="Intervalo entre passos" /><div class="scale"><span>Mais rápido</span><span>Mais lento</span></div></div>
+          <div class="play-actions"><button type="button" id="play" class="primary">▶ Executar</button><button type="button" id="step">Próximo passo →</button><button type="button" id="pause">Pausar</button><button type="button" id="reset">↺ Reiniciar</button></div>
+          <button type="button" id="compare" class="compare-button">Comparar BFS e DFS</button>
+          <p class="assist" id="assist">Dica: clique em "Próximo passo" para acompanhar cada decisão.</p>
+        </aside>
+
+        <section class="panel stage" aria-label="Labirinto da busca">
+          <div class="panel-heading stage-heading"><div><h2>Exploração do grafo</h2><p>Os quadrados conectados representam os vértices; cada conexão vale uma aresta.</p></div><div class="step-count"><span>ETAPA</span><strong id="step-count">0 / 0</strong></div></div>
+          <div class="legend"><span><i class="legend-dot start"></i>Início</span><span><i class="legend-dot end"></i>Destino</span><span><i class="legend-dot queued"></i>Descoberto</span><span><i class="legend-dot visited"></i>Visitado</span><span><i class="legend-dot current"></i>Atual</span><span><i class="legend-dot route"></i>Caminho</span><span><i class="legend-dot wall"></i>Obstáculo</span></div>
+          <div class="maze-frame"><div id="grid" class="maze-grid" aria-label="Labirinto de sete linhas por nove colunas"></div></div>
+          <div class="current-action"><div class="action-icon" aria-hidden="true">↳</div><div><span>O QUE ACONTECE NESTE PASSO</span><p id="action-label" aria-live="polite">Selecione um cenário e avance para iniciar a busca.</p></div></div>
+          <div class="progress-track" aria-hidden="true"><div id="progress-bar"></div></div>
+          <div class="explanation"><h3>Por que os resultados podem ser diferentes?</h3><p><strong>BFS</strong> explora por distância, camada a camada, e encontra o menor caminho em um grafo sem pesos. <strong>DFS</strong> segue um ramo até o fim antes de voltar, então pode encontrar uma rota maior.</p></div>
+        </section>
+
+        <aside class="panel metrics" aria-label="Estado atual da busca">
+          <div class="panel-heading"><h2>Estado da execução</h2><span class="section-number">02</span></div>
+          <div class="metric-grid"><div class="metric"><span>VÉRTICES VISITADOS</span><strong id="visited-count">0</strong></div><div class="metric"><span>ARESTAS EXAMINADAS</span><strong id="operations-count">0</strong></div><div class="metric"><span>TAMANHO DA ROTA</span><strong id="distance-count">—</strong><small>número de arestas</small></div><div class="metric"><span>MAIOR FRONTEIRA</span><strong id="frontier-peak">1</strong></div></div>
+          <div class="data-heading"><h3 id="frontier-title">Fila (FIFO)</h3><span id="frontier-caption">Primeiro a entrar, primeiro a sair</span></div>
+          <div id="frontier" class="frontier-list" aria-live="polite"></div><div class="frontier-note" id="frontier-note">A próxima posição a sair é destacada.</div>
+          <div class="data-heading"><h3>Registro de passos</h3><span>últimos movimentos</span></div>
+          <ol class="event-list" id="event-list"></ol>
+          <div id="comparison" class="comparison" hidden><div class="comparison-title"><h3>Resultado comparativo</h3><button id="close-comparison" type="button" aria-label="Fechar comparação">×</button></div><table><thead><tr><th></th><th>BFS</th><th>DFS</th></tr></thead><tbody><tr><td>Arestas na rota</td><td id="compare-bfs-distance"></td><td id="compare-dfs-distance"></td></tr><tr><td>Nós visitados</td><td id="compare-bfs-visits"></td><td id="compare-dfs-visits"></td></tr><tr><td>Operações</td><td id="compare-bfs-ops"></td><td id="compare-dfs-ops"></td></tr></tbody></table><p id="comparison-note"></p></div>
+        </aside>
+      </main>
+      <footer>Visualização didática · Grafos por lista de adjacência · BFS e DFS iterativas</footer>
+    </div>
+  </body>
+</html>
